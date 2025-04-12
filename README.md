@@ -48,4 +48,58 @@ mvn spring-boot:run
 Once the application is running, you can test the API endpoints using Postman or any other API testing tool.
 
 
+## API Endpoints
+1. Refresh Data API - Automatically loads csv from resource folder and refresh data.
+Route: /api/v1/refresh-data
+
+Method: GET
+Request: http://localhost:8080/api/v1/refresh-data
+Sample Response:
+{
+  "message": "Data refresh completed"
+}
+
+2. Total Revenue API
+Route: /api/v1/analysis/total-revenue
+Method: GET
+Request: http://localhost:8080/api/v1/analysis/total-revenue?startDate=2023-01-01&endDate=2023-12-31
+Sample Response:
+{
+  "totalRevenue": 123456.78
+}
+
+4. Revenue by Product API
+Route: /api/v1/analysis/revenue-by-product
+Method: GET
+Request: http://localhost:8080/api/v1/analysis/revenue-by-product?startDate=2023-01-01&endDate=2023-12-31
+Sample Response:
+{
+  "Product A": 50000.00,
+  "Product B": 30000.00,
+  "Product C": 40000.00
+}
+
+5. Revenue by Category API
+Route: /api/v1/analysis/revenue-by-category
+Method: GET
+Request: http://localhost:8080/api/v1/analysis/revenue-by-category?startDate=2023-01-01&endDate=2023-12-31
+Sample Response:
+{
+  "Electronics": 80000.00,
+  "Furniture": 50000.00,
+  "Clothing": 40000.00
+}
+
+5. Revenue by Region API
+Route: /api/v1/analysis/revenue-by-region
+Method: GET
+Request: http://localhost:8080/api/v1/analysis/revenue-by-region?startDate=2023-01-01&endDate=2023-12-31
+Sample Response:
+{
+  "North": 60000.00,
+  "South": 70000.00,
+  "East": 50000.00,
+  "West": 40000.00
+}
+
 
