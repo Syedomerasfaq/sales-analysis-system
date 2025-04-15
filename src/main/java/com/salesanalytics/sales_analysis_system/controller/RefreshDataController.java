@@ -1,20 +1,33 @@
 package com.salesanalytics.sales_analysis_system.controller;
 
 import com.salesanalytics.sales_analysis_system.service.DataLoadService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/v1")
+@Tag(name = "Data Refresh", description = "Endpoints to refresh sales data from CSV")
 public class RefreshDataController {
+
+    private static final Logger log = LoggerFactory.getLogger(RefreshDataController.class);
 
     public DataLoadService dataLoadService;
 
@@ -22,16 +35,27 @@ public class RefreshDataController {
     public RefreshDataController(DataLoadService dataLoadService) {
         this.dataLoadService = dataLoadService;
     }
-    @GetMapping("/refresh-data")
-    public ResponseEntity<String> refreshData() {
+
+    @PostMapping(value = "/refresh-data", consumes = "multipart/form-data")
+    @Operation(
+            summary = "Refresh sales data from the uploaded CSV file",
+            description = "This endpoint allows uploading a CSV file to refresh the sales data. The CSV file should contain the latest data for processing."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Data refresh completed successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid CSV file format or bad request"),
+            @ApiResponse(responseCode = "500", description = "Error during data refresh, internal server error")
+    })
+    public ResponseEntity<String> refreshData(@Parameter(description = "CSV file to upload", required = true) @RequestPart("file") MultipartFile file) {
+        log.info("Received request to refresh data from CSV file: {}", file.getOriginalFilename());
         try {
-            ClassPathResource resource = new ClassPathResource("test.csv");
-            try (FileInputStream fileInputStream = new FileInputStream(resource.getFile())) {
-                dataLoadService.loadCSVData(fileInputStream);
-            }
+            dataLoadService.loadCSVData(file.getInputStream());
+            log.info("Data refresh completed successfully from file: {}", file.getOriginalFilename());
             return ResponseEntity.ok("Data refresh completed");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error during data refresh");
+            log.error("Error during data refresh for file: {}", file.getOriginalFilename(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error during data refresh: " + e.getMessage());
         }
     }
 }
