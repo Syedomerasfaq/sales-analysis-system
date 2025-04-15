@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +27,8 @@ import java.util.Map;
 @Tag(name = "Revenue Analysis", description = "Endpoints for analyzing revenue by different dimensions")
 public class RevenueAnalysisController {
 
+    private static final Logger log = LoggerFactory.getLogger(RevenueAnalysisController.class);
+
     @Autowired
     private RevenueAnalysisService revenueAnalysisService;
 
@@ -41,10 +45,18 @@ public class RevenueAnalysisController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<BigDecimal> getTotalRevenue(@RequestParam String startDate, @RequestParam String endDate) {
-        LocalDate start = DateUtils.parseDate(startDate);
-        LocalDate end = DateUtils.parseDate(endDate);
-        BigDecimal total = revenueAnalysisService.getTotalRevenue(start, end);
-        return ResponseEntity.ok(total);
+
+        log.info("Received request for total revenue from {} to {}", startDate, endDate);
+        try {
+            LocalDate start = DateUtils.parseDate(startDate);
+            LocalDate end = DateUtils.parseDate(endDate);
+            BigDecimal total = revenueAnalysisService.getTotalRevenue(start, end);
+            log.info("Total revenue calculated: {}", total);
+            return ResponseEntity.ok(total);
+        } catch (Exception e) {
+            log.error("Error calculating total revenue from {} to {}", startDate, endDate, e);
+            return ResponseEntity.status(500).body(BigDecimal.ZERO);
+        }
     }
 
     @GetMapping("/revenue-by-product")
@@ -61,12 +73,14 @@ public class RevenueAnalysisController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Map<String, BigDecimal>> getRevenueByProduct(@RequestParam String startDate, @RequestParam String endDate) {
+        log.info("Received request for revenue by product from {} to {}", startDate, endDate);
         LocalDate start = DateUtils.parseDate(startDate);
         LocalDate end = DateUtils.parseDate(endDate);
         List<Object[]> results = revenueAnalysisService.getRevenueByProduct(start, end);
         if (results == null || results.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
+        log.info("Revenue by product fetched successfully");
         return ResponseEntity.ok(DataTransformUtils.convertToMap(results));
     }
 
@@ -84,12 +98,14 @@ public class RevenueAnalysisController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Map<String, BigDecimal>> getRevenueByCategory(@RequestParam String startDate, @RequestParam String endDate) {
+        log.info("Received request for revenue by category from {} to {}", startDate, endDate);
         LocalDate start = DateUtils.parseDate(startDate);
         LocalDate end = DateUtils.parseDate(endDate);
         List<Object[]> results = revenueAnalysisService.getRevenueByCategory(start, end);
         if (results == null || results.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
+        log.info("Revenue by category fetched successfully");
         return ResponseEntity.ok(DataTransformUtils.convertToMap(results));
     }
 
@@ -107,12 +123,14 @@ public class RevenueAnalysisController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Map<String, BigDecimal>> getRevenueByRegion(@RequestParam String startDate, @RequestParam String endDate) {
+        log.info("Received request for revenue by region from {} to {}", startDate, endDate);
         LocalDate start = DateUtils.parseDate(startDate);
         LocalDate end = DateUtils.parseDate(endDate);
         List<Object[]> results = revenueAnalysisService.getRevenueByRegion(start, end);
         if (results == null || results.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
+        log.info("Revenue by region fetched successfully");
         return ResponseEntity.ok(DataTransformUtils.convertToMap(results));
     }
 }

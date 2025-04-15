@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
@@ -24,6 +26,8 @@ import java.io.IOException;
 @RequestMapping("/api/v1")
 @Tag(name = "Data Refresh", description = "Endpoints to refresh sales data from CSV")
 public class RefreshDataController {
+
+    private static final Logger log = LoggerFactory.getLogger(RefreshDataController.class);
 
     public DataLoadService dataLoadService;
 
@@ -44,10 +48,13 @@ public class RefreshDataController {
             @ApiResponse(responseCode = "500", description = "Error during data refresh, internal server error")
     })
     public ResponseEntity<String> refreshData(@Parameter(description = "CSV file to upload", required = true) @RequestPart("file") MultipartFile file) {
+        log.info("Received request to refresh data from CSV file: {}", file.getOriginalFilename());
         try {
             dataLoadService.loadCSVData(file.getInputStream());
+            log.info("Data refresh completed successfully from file: {}", file.getOriginalFilename());
             return ResponseEntity.ok("Data refresh completed");
         } catch (Exception e) {
+            log.error("Error during data refresh for file: {}", file.getOriginalFilename(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error during data refresh: " + e.getMessage());
         }
     }
