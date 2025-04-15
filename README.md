@@ -48,6 +48,17 @@ mvn spring-boot:run
 Once the application is running, you can test the API endpoints using Postman or any other API testing tool.
 
 
+### Swagger UI
+Swagger provides an interactive documentation for the API endpoints. To access the Swagger UI:
+
+Run the Spring Boot application.
+
+Open a browser and go to the following URL:
+```bash
+http://localhost:8080/swagger-ui.html
+This will display the Swagger UI where you can test the API endpoints directly.
+```
+
 ## API Endpoints
 1. Refresh Data API - Automatically loads csv from resource folder and refresh data.
 Route: /api/v1/refresh-data
